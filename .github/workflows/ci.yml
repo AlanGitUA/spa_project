@@ -14,8 +14,8 @@ jobs:
     runs-on: ubuntu-latest
 
     defaults:
-    run:
-      working-directory:frontend
+      run:
+        working-directory: frontend
 
     steps:
       - name: Checkout repository (git clone)
