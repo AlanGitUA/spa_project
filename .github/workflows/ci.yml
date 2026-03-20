@@ -1,31 +1,68 @@
-#comando par dar el nombre del flujo
 name: CI pipeline
 
-#indica cuando se ejecuta el flujo
 on:
-  pull_request: 
+  pull_request:
   push:
     branches:
       - develop
 
-#acciones que se ejecutaran en el servidor:
 jobs:
+  # ─────────────────────────────────────────
+  # 1. Backend — test + build (Spring Boot + Maven)
+  # ─────────────────────────────────────────
+  backend-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25-ea'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Dar permisos al Maven Wrapper
+        run: chmod +x mvnw
+
+      - name: Ejecutar tests del backend
+        run: ./mvnw test
+
+      - name: Construir el backend
+        run: ./mvnw package -DskipTests
+
+  # ─────────────────────────────────────────
+  # 2. Frontend — test + build (React + Vite)
+  #    Espera que el backend esté listo primero
+  # ─────────────────────────────────────────
   frontend-build:
     runs-on: ubuntu-latest
-
+    needs: backend-build
     defaults:
       run:
         working-directory: frontend
 
     steps:
-      - name: Checkout repository (git clone)
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup node (instalar node)
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
       - name: Instalar dependencias
-        run: npm install
+        run: npm ci
+
+      - name: Ejecutar tests del frontend
+        run: npm test
+
       - name: Construir el frontend
-        run: rpm run build 
+        run: npm run build
