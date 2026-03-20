@@ -5,7 +5,7 @@ import cl.spa.backend.model.Plan;
 import cl.spa.backend.repository.PlanRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;  // ← cambio aquí
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,7 +23,7 @@ class BackendApplicationTests {
     @MockitoBean
     PlanRepository repository;
 
- 	@Test
+    @Test
     void getPlanes_retornaListaDePlanes() throws Exception {
         var planes = List.of(
             new Plan("Básico",  "Acceso estándar", 29990.0),
@@ -40,6 +40,8 @@ class BackendApplicationTests {
 
     @Test
     void getPlanes_retorna200() throws Exception {
+        org.mockito.Mockito.when(repository.findAll()).thenReturn(List.of());
+
         mockMvc.perform(get("/api/planes"))
                .andExpect(status().isOk())
                .andExpect(content().contentType("application/json"));
